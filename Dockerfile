@@ -2,12 +2,12 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["BaGet/BaGet.csproj", "BaGet/"]
-COPY ["BaGet.Core/BaGet.Core.csproj", "BaGet.Core/"]
-COPY ["BaGet.Protocol/BaGet.Protocol.csproj", "BaGet.Protocol/"]
-COPY ["BaGet.Database.Sqlite/BaGet.Database.Sqlite.csproj", "BaGet.Database.Sqlite/"]
+COPY ["src/BaGet/BaGet.csproj", "BaGet/"]
+COPY ["src/BaGet.Core/BaGet.Core.csproj", "BaGet.Core/"]
+COPY ["src/BaGet.Protocol/BaGet.Protocol.csproj", "BaGet.Protocol/"]
+COPY ["src/BaGet.Database.Sqlite/BaGet.Database.Sqlite.csproj", "BaGet.Database.Sqlite/"]
 RUN dotnet restore "BaGet/BaGet.csproj"
-COPY . .
+COPY ./src/ .
 WORKDIR "/src/BaGet"
 RUN dotnet publish "BaGet.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
