@@ -10,6 +10,7 @@ ApiKey：推送包使用的Api Key，默认是123456
 AllowPackageOverwrites：是否允许替换现有包，true表示允许替换  
 使用sqlite作为数据库，文件路径：/data/baget/data/baget.db  
 包存储路径：/data/baget/data/packages/  
+http协议时,会使用v2版本推送，Legacy需要设置为true
 
 ```json
 {
@@ -29,8 +30,8 @@ AllowPackageOverwrites：是否允许替换现有包，true表示允许替换
   },
   "Mirror": {
     "Enabled": false,
-    // Uncomment this to use the NuGet v2 protocol
-    //"Legacy": true,
+    //开启v2版本推送，通常http协议时会使用
+    "Legacy": true,
     "PackageSource": "https://api.nuget.org/v3/index.json"
   },
   "Logging": {
@@ -46,5 +47,5 @@ AllowPackageOverwrites：是否允许替换现有包，true表示允许替换
 挂载目录：/data/baget/data  
 ```command
 docker build -t baget:latest .
-docker run -d -p 8085:80 -p 8086:443 --name baget -v /data/baget/data:/data/baget/data baget:latest
+docker run -d -p 8085:8080 -p 8086:443 --name baget -v /data/baget/data:/data/baget/data baget:latest
 ```
