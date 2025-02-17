@@ -1,3 +1,6 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using BaGet;
 using BaGet.Core;
 using McMaster.Extensions.CommandLineUtils;
@@ -9,9 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +32,7 @@ builder.Services.AddSingleton<IConfigureOptions<MvcRazorRuntimeCompilationOption
 builder.Services.AddTransient<IUrlGenerator, BaGetUrlGenerator>();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddBaGetApplication(f => f.AddSqliteDatabase().AddFileStorage());
+builder.Services.AddBaGetApplication(f => f.AddMySqlDatabase().AddFileStorage());
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers()

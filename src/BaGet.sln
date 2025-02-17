@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaGet.Core", "BaGet.Core\Ba
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaGet.Protocol", "BaGet.Protocol\BaGet.Protocol.csproj", "{D9DE1F0D-1312-4789-851F-B5884ED1E8ED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaGet.Database.Sqlite", "BaGet.Database.Sqlite\BaGet.Database.Sqlite.csproj", "{AC33A0E7-3DF0-4439-A9FA-987ADF5FA728}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaGet.Database.MySql", "BaGet.Database.MySql\BaGet.Database.MySql.csproj", "{9559AF9B-64D0-4ADD-8A22-8C708B244442}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{D9DE1F0D-1312-4789-851F-B5884ED1E8ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9DE1F0D-1312-4789-851F-B5884ED1E8ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9DE1F0D-1312-4789-851F-B5884ED1E8ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC33A0E7-3DF0-4439-A9FA-987ADF5FA728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC33A0E7-3DF0-4439-A9FA-987ADF5FA728}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC33A0E7-3DF0-4439-A9FA-987ADF5FA728}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC33A0E7-3DF0-4439-A9FA-987ADF5FA728}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9559AF9B-64D0-4ADD-8A22-8C708B244442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9559AF9B-64D0-4ADD-8A22-8C708B244442}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9559AF9B-64D0-4ADD-8A22-8C708B244442}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9559AF9B-64D0-4ADD-8A22-8C708B244442}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
