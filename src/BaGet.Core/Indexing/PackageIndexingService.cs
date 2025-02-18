@@ -1,12 +1,17 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NuGet.Packaging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Configuration;
+using BaGet.Core.Entities;
+using BaGet.Core.Extensions;
+using BaGet.Core.Search;
+using BaGet.Core.Storage;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NuGet.Packaging;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Indexing;
 
 public class PackageIndexingService : IPackageIndexingService
 {
@@ -17,13 +22,7 @@ public class PackageIndexingService : IPackageIndexingService
     private readonly IOptionsSnapshot<BaGetOptions> _options;
     private readonly ILogger<PackageIndexingService> _logger;
 
-    public PackageIndexingService(
-        IPackageDatabase packages,
-        IPackageStorageService storage,
-        ISearchIndexer search,
-        SystemTime time,
-        IOptionsSnapshot<BaGetOptions> options,
-        ILogger<PackageIndexingService> logger)
+    public PackageIndexingService(IPackageDatabase packages, IPackageStorageService storage, ISearchIndexer search, SystemTime time, IOptionsSnapshot<BaGetOptions> options, ILogger<PackageIndexingService> logger)
     {
         _packages = packages ?? throw new ArgumentNullException(nameof(packages));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -47,7 +46,6 @@ public class PackageIndexingService : IPackageIndexingService
             {
                 package = packageReader.GetPackageMetadata();
                 package.Published = _time.UtcNow;
-
                 nuspecStream = await packageReader.GetNuspecAsync(cancellationToken);
                 nuspecStream = await nuspecStream.AsTemporaryFileStreamAsync(cancellationToken);
 
@@ -56,26 +54,19 @@ public class PackageIndexingService : IPackageIndexingService
                     readmeStream = await packageReader.GetReadmeAsync(cancellationToken);
                     readmeStream = await readmeStream.AsTemporaryFileStreamAsync(cancellationToken);
                 }
-                else
-                {
-                    readmeStream = null;
-                }
+                else readmeStream = null;
 
                 if (package.HasEmbeddedIcon)
                 {
                     iconStream = await packageReader.GetIconAsync(cancellationToken);
                     iconStream = await iconStream.AsTemporaryFileStreamAsync(cancellationToken);
                 }
-                else
-                {
-                    iconStream = null;
-                }
+                else iconStream = null;
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Uploaded package is invalid");
-
             return PackageIndexingResult.InvalidPackage;
         }
 
@@ -93,49 +84,32 @@ public class PackageIndexingService : IPackageIndexingService
 
         // TODO: Add more package validations
         // TODO: Call PackageArchiveReader.ValidatePackageEntriesAsync
-        _logger.LogInformation(
-            "Validated package {PackageId} {PackageVersion}, persisting content to storage...",
-            package.Id,
-            package.NormalizedVersionString);
+        _logger.LogInformation("Validated package {PackageId} {PackageVersion}, persisting content to storage...", 
+            package.Id, package.NormalizedVersionString);
 
         try
         {
             packageStream.Position = 0;
-
-            await _storage.SavePackageContentAsync(
-                package,
-                packageStream,
-                nuspecStream,
-                readmeStream,
-                iconStream,
-                cancellationToken);
+            await _storage.SavePackageContentAsync(package, packageStream, nuspecStream, readmeStream, iconStream, cancellationToken);
         }
         catch (Exception e)
         {
             // This may happen due to concurrent pushes.
             // TODO: Make IPackageStorageService.SavePackageContentAsync return a result enum so this
             // can be properly handled.
-            _logger.LogError(
-                e,
-                "Failed to persist package {PackageId} {PackageVersion} content to storage",
-                package.Id,
-                package.NormalizedVersionString);
-
+            _logger.LogError(e, "Failed to persist package {PackageId} {PackageVersion} content to storage",
+                package.Id, package.NormalizedVersionString);
             throw;
         }
 
-        _logger.LogInformation(
-            "Persisted package {Id} {Version} content to storage, saving metadata to database...",
-            package.Id,
-            package.NormalizedVersionString);
+        _logger.LogInformation("Persisted package {Id} {Version} content to storage, saving metadata to database...",
+            package.Id, package.NormalizedVersionString);
 
         var result = await _packages.AddAsync(package, cancellationToken);
         if (result == PackageAddResult.PackageAlreadyExists)
         {
-            _logger.LogWarning(
-                "Package {Id} {Version} metadata already exists in database",
-                package.Id,
-                package.NormalizedVersionString);
+            _logger.LogWarning("Package {Id} {Version} metadata already exists in database",
+                package.Id, package.NormalizedVersionString);
 
             return PackageIndexingResult.PackageAlreadyExists;
         }
@@ -143,21 +117,15 @@ public class PackageIndexingService : IPackageIndexingService
         if (result != PackageAddResult.Success)
         {
             _logger.LogError($"Unknown {nameof(PackageAddResult)} value: {{PackageAddResult}}", result);
-
             throw new InvalidOperationException($"Unknown {nameof(PackageAddResult)} value: {result}");
         }
 
-        _logger.LogInformation(
-            "Successfully persisted package {Id} {Version} metadata to database. Indexing in search...",
-            package.Id,
-            package.NormalizedVersionString);
+        _logger.LogInformation("Successfully persisted package {Id} {Version} metadata to database. Indexing in search...",
+            package.Id, package.NormalizedVersionString);
 
         await _search.IndexAsync(package, cancellationToken);
-
-        _logger.LogInformation(
-            "Successfully indexed package {Id} {Version} in search",
-            package.Id,
-            package.NormalizedVersionString);
+        _logger.LogInformation("Successfully indexed package {Id} {Version} in search",
+            package.Id, package.NormalizedVersionString);
 
         return PackageIndexingResult.Success;
     }

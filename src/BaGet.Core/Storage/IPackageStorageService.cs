@@ -1,9 +1,10 @@
-using NuGet.Versioning;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Storage;
 
 /// <summary>
 /// Stores packages' content. Packages' state are stored by the
@@ -22,14 +23,7 @@ public interface IPackageStorageService
     /// <param name="iconStream">The package's icon stream, or null if none.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SavePackageContentAsync(
-        Package package,
-        Stream packageStream,
-        Stream nuspecStream,
-        Stream readmeStream,
-        Stream iconStream,
-        CancellationToken cancellationToken);
-
+    Task SavePackageContentAsync(Package package, Stream packageStream, Stream nuspecStream, Stream readmeStream, Stream iconStream, CancellationToken cancellationToken);
     /// <summary>
     /// Retrieve a package's nupkg stream.
     /// </summary>
@@ -38,7 +32,6 @@ public interface IPackageStorageService
     /// <param name="cancellationToken"></param>
     /// <returns>The package's nupkg stream.</returns>
     Task<Stream> GetPackageStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken);
-
     /// <summary>
     /// Retrieve a package's nuspec stream.
     /// </summary>
@@ -47,7 +40,6 @@ public interface IPackageStorageService
     /// <param name="cancellationToken"></param>
     /// <returns>The package's nuspec stream.</returns>
     Task<Stream> GetNuspecStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken);
-
     /// <summary>
     /// Retrieve a package's readme stream.
     /// </summary>
@@ -56,9 +48,7 @@ public interface IPackageStorageService
     /// <param name="cancellationToken"></param>
     /// <returns>The package's readme stream.</returns>
     Task<Stream> GetReadmeStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken);
-
     Task<Stream> GetIconStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken);
-
     /// <summary>
     /// Remove a package's content from storage. This operation SHOULD succeed
     /// even if the package does not exist.

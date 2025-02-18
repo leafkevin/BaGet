@@ -1,4 +1,4 @@
-namespace BaGet.Core;
+namespace BaGet.Core.Entities;
 
 public enum SemVerLevel
 {
@@ -6,7 +6,6 @@ public enum SemVerLevel
     /// Either an invalid semantic version or a semantic version v1.0.0
     /// </summary>
     Unknown = 0,
-
     /// <summary>
     /// A valid semantic version v2.0.0
     /// </summary>

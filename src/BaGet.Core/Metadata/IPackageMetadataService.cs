@@ -1,9 +1,9 @@
-using BaGet.Protocol.Models;
-using NuGet.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Protocol.Models;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Metadata;
 
 /// <summary>
 /// The Package Metadata client, used to fetch packages' metadata.
@@ -28,8 +28,5 @@ public interface IPackageMetadataService
     /// <param name="packageVersion">The package's version.</param>
     /// <param name="cancellationToken">A token to cancel the task.</param>
     /// <returns>The registration leaf, or null if the package does not exist.</returns>
-    Task<RegistrationLeafResponse> GetRegistrationLeafOrNullAsync(
-        string packageId,
-        NuGetVersion packageVersion,
-        CancellationToken cancellationToken = default);
+    Task<RegistrationLeafResponse> GetRegistrationLeafOrNullAsync(string packageId, NuGetVersion packageVersion, CancellationToken cancellationToken = default);
 }

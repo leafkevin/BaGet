@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Storage;
 
 /// <summary>
 /// Stores the content of symbols, also known as PDBs.
@@ -18,11 +18,7 @@ public interface ISymbolStorageService
     /// <param name="pdbStream">The PDB's content stream.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SavePortablePdbContentAsync(
-        string file,
-        string key,
-        Stream pdbStream,
-        CancellationToken cancellationToken);
+    Task SavePortablePdbContentAsync(string file, string key, Stream pdbStream, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieve a portable PDB's content stream.

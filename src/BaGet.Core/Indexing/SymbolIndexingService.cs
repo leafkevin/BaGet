@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-using NuGet.Packaging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,14 +5,18 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Extensions;
+using BaGet.Core.Storage;
+using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Indexing;
 
 // Based off: https://github.com/NuGet/NuGetGallery/blob/master/src/NuGetGallery/Services/SymbolPackageUploadService.cs
 // Based off: https://github.com/NuGet/NuGet.Jobs/blob/master/src/Validation.Symbols/SymbolsValidatorService.cs#L44
 public class SymbolIndexingService : ISymbolIndexingService
 {
-    private static readonly HashSet<string> ValidSymbolPackageContentExtensions = new HashSet<string>
+    private static readonly HashSet<string> ValidSymbolPackageContentExtensions = new()
     {
         ".pdb",
         ".nuspec",
@@ -28,10 +30,7 @@ public class SymbolIndexingService : ISymbolIndexingService
     private readonly ISymbolStorageService _storage;
     private readonly ILogger<SymbolIndexingService> _logger;
 
-    public SymbolIndexingService(
-        IPackageDatabase packages,
-        ISymbolStorageService storage,
-        ILogger<SymbolIndexingService> logger)
+    public SymbolIndexingService(IPackageDatabase packages, ISymbolStorageService storage, ILogger<SymbolIndexingService> logger)
     {
         _packages = packages ?? throw new ArgumentNullException(nameof(packages));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -45,20 +44,14 @@ public class SymbolIndexingService : ISymbolIndexingService
             using (var symbolPackage = new PackageArchiveReader(stream, leaveStreamOpen: true))
             {
                 var pdbPaths = await GetSymbolPackagePdbPathsOrNullAsync(symbolPackage, cancellationToken);
-                if (pdbPaths == null)
-                {
-                    return SymbolIndexingResult.InvalidSymbolPackage;
-                }
+                if (pdbPaths == null) return SymbolIndexingResult.InvalidSymbolPackage;
 
                 // Ensure a corresponding NuGet package exists.
                 var packageId = symbolPackage.NuspecReader.GetId();
                 var packageVersion = symbolPackage.NuspecReader.GetVersion();
 
                 var package = await _packages.FindOrNullAsync(packageId, packageVersion, includeUnlisted: true, cancellationToken);
-                if (package == null)
-                {
-                    return SymbolIndexingResult.PackageNotFound;
-                }
+                if (package == null) return SymbolIndexingResult.PackageNotFound;
 
                 using (var pdbs = new PdbList())
                 {
@@ -67,11 +60,7 @@ public class SymbolIndexingService : ISymbolIndexingService
                     foreach (var pdbPath in pdbPaths)
                     {
                         var portablePdb = await ExtractPortablePdbAsync(symbolPackage, pdbPath, cancellationToken);
-                        if (portablePdb == null)
-                        {
-                            return SymbolIndexingResult.InvalidSymbolPackage;
-                        }
-
+                        if (portablePdb == null) return SymbolIndexingResult.InvalidSymbolPackage;
                         pdbs.Add(portablePdb);
                     }
 
@@ -92,21 +81,16 @@ public class SymbolIndexingService : ISymbolIndexingService
         }
     }
 
-    private async Task<IReadOnlyList<string>> GetSymbolPackagePdbPathsOrNullAsync(
-        PackageArchiveReader symbolPackage,
-        CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<string>> GetSymbolPackagePdbPathsOrNullAsync(PackageArchiveReader symbolPackage, CancellationToken cancellationToken)
     {
         try
         {
             await symbolPackage.ValidatePackageEntriesAsync(cancellationToken);
-
             var files = (await symbolPackage.GetFilesAsync(cancellationToken)).ToList();
 
             // Ensure there are no unexpected file extensions within the symbol package.
             if (!AreSymbolFilesValid(files))
-            {
                 return null;
-            }
 
             return files.Where(p => Path.GetExtension(p) == ".pdb").ToList();
         }
@@ -133,10 +117,7 @@ public class SymbolIndexingService : ISymbolIndexingService
         return entries.Select(e => new FileInfo(e)).All(IsValidSymbolFileInfo);
     }
 
-    private async Task<PortablePdb> ExtractPortablePdbAsync(
-        PackageArchiveReader symbolPackage,
-        string pdbPath,
-        CancellationToken cancellationToken)
+    private async Task<PortablePdb> ExtractPortablePdbAsync(PackageArchiveReader symbolPackage, string pdbPath, CancellationToken cancellationToken)
     {
         // TODO: Validate that the PDB has a corresponding DLL
         // See: https://github.com/NuGet/NuGet.Jobs/blob/master/src/Validation.Symbols/SymbolsValidatorService.cs#L170
@@ -148,11 +129,12 @@ public class SymbolIndexingService : ISymbolIndexingService
             using (var rawPdbStream = await symbolPackage.GetStreamAsync(pdbPath, cancellationToken))
             {
                 pdbStream = await rawPdbStream.AsTemporaryFileStreamAsync();
-
                 string signature;
                 using (var pdbReaderProvider = MetadataReaderProvider.FromPortablePdbStream(pdbStream, MetadataStreamOptions.LeaveOpen))
                 {
                     var reader = pdbReaderProvider.GetMetadataReader();
+                    if (reader.DebugMetadataHeader == null)
+                        throw new InvalidOperationException($"Reader {reader} Debug meta data header is null!");
                     var id = new BlobContentId(reader.DebugMetadataHeader.Id);
 
                     signature = id.Guid.ToString("N").ToUpperInvariant();
@@ -168,11 +150,8 @@ public class SymbolIndexingService : ISymbolIndexingService
         finally
         {
             if (result == null)
-            {
                 pdbStream?.Dispose();
-            }
         }
-
         return result;
     }
 

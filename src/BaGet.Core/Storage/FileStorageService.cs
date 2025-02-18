@@ -1,10 +1,12 @@
-using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Configuration;
+using BaGet.Core.Extensions;
+using Microsoft.Extensions.Options;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Storage;
 
 /// <summary>
 /// Stores content on disk.
@@ -39,27 +41,23 @@ public class FileStorageService : IStorageService
     public Task<Uri> GetDownloadUriAsync(string path, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
         var result = new Uri(GetFullPath(path));
-
         return Task.FromResult(result);
     }
 
-    public async Task<StoragePutResult> PutAsync(
-        string path,
-        Stream content,
-        string contentType,
-        CancellationToken cancellationToken = default)
+    public async Task<StoragePutResult> PutAsync(string path, Stream content, string contentType, CancellationToken cancellationToken = default)
     {
         if (content == null) throw new ArgumentNullException(nameof(content));
         if (string.IsNullOrEmpty(contentType)) throw new ArgumentException("Content type is required", nameof(contentType));
 
         cancellationToken.ThrowIfCancellationRequested();
-
         path = GetFullPath(path);
+        var pathDirectory = Path.GetDirectoryName(path);
+        if (pathDirectory == null)
+            throw new ArgumentNullException(nameof(pathDirectory));
 
         // Ensure that the path exists.
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(pathDirectory);
 
         try
         {
@@ -74,9 +72,7 @@ public class FileStorageService : IStorageService
             using (var targetStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 content.Position = 0;
-                return content.Matches(targetStream)
-                    ? StoragePutResult.AlreadyExists
-                    : StoragePutResult.Conflict;
+                return content.Matches(targetStream) ? StoragePutResult.AlreadyExists : StoragePutResult.Conflict;
             }
         }
     }
@@ -99,18 +95,12 @@ public class FileStorageService : IStorageService
     private string GetFullPath(string path)
     {
         if (string.IsNullOrEmpty(path))
-        {
             throw new ArgumentException("Path is required", nameof(path));
-        }
-
         var fullPath = Path.GetFullPath(Path.Combine(_storePath, path));
 
         // Verify path is under the _storePath.
-        if (!fullPath.StartsWith(_storePath, StringComparison.Ordinal) ||
-            fullPath.Length == _storePath.Length)
-        {
+        if (!fullPath.StartsWith(_storePath, StringComparison.Ordinal) || fullPath.Length == _storePath.Length)
             throw new ArgumentException("Path resolves outside store path", nameof(path));
-        }
 
         return fullPath;
     }

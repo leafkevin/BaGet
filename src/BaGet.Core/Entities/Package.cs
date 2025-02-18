@@ -1,14 +1,14 @@
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using NuGet.Versioning;
+// ReSharper disable EntityFramework.ModelValidation.UnlimitedStringLength
 
-namespace BaGet.Core;
+namespace BaGet.Core.Entities;
 
 // See NuGetGallery's: https://github.com/NuGet/NuGetGallery/blob/master/src/NuGetGallery.Core/Entities/Package.cs
 public class Package
 {
     public int Key { get; set; }
-
     public string Id { get; set; }
 
     public NuGetVersion Version
@@ -17,10 +17,7 @@ public class Package
         {
             // Favor the original version string as it contains more information.
             // Packages uploaded with older versions of BaGet may not have the original version string.
-            return NuGetVersion.Parse(
-                OriginalVersionString != null
-                    ? OriginalVersionString
-                    : NormalizedVersionString);
+            return NuGetVersion.Parse(OriginalVersionString ?? NormalizedVersionString);
         }
 
         set
@@ -52,7 +49,6 @@ public class Package
 
     public Uri RepositoryUrl { get; set; }
     public string RepositoryType { get; set; }
-
     public string[] Tags { get; set; }
 
     /// <summary>
@@ -66,7 +62,6 @@ public class Package
 
     public string NormalizedVersionString { get; set; }
     public string OriginalVersionString { get; set; }
-
 
     public string IconUrlString => IconUrl?.AbsoluteUri ?? string.Empty;
     public string LicenseUrlString => LicenseUrl?.AbsoluteUri ?? string.Empty;

@@ -1,7 +1,8 @@
-﻿using BaGet.Protocol.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using BaGet.Core.Metadata;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 public interface ISearchResponseBuilder
 {

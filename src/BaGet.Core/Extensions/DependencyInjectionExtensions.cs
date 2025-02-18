@@ -1,31 +1,39 @@
-using BaGet.Protocol;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using BaGet.Core.Authentication;
+using BaGet.Core.Configuration;
+using BaGet.Core.Content;
+using BaGet.Core.Entities;
+using BaGet.Core.Indexing;
+using BaGet.Core.Metadata;
+using BaGet.Core.Search;
+using BaGet.Core.ServiceIndex;
+using BaGet.Core.Storage;
+using BaGet.Core.Upstream;
+using BaGet.Core.Upstream.Clients;
+using BaGet.Core.Validation;
+using BaGet.Protocol;
+using BaGet.Protocol.ClientFactories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Extensions;
 
 public static partial class DependencyInjectionExtensions
 {
-    public static IServiceCollection AddBaGetApplication(
-        this IServiceCollection services,
-        Action<BaGetApplication> configureAction)
+    public static IServiceCollection AddBaGetApplication(this IServiceCollection services, Action<BaGetApplication> configureAction)
     {
         var app = new BaGetApplication(services);
 
         services.AddConfiguration();
         services.AddBaGetServices();
         services.AddDefaultProviders();
-
         configureAction(app);
-
         services.AddFallbackServices();
-
         return services;
     }
 
@@ -39,26 +47,19 @@ public static partial class DependencyInjectionExtensions
     /// If null, the root configuration will be used to configure the options.
     /// </param>
     /// <returns>The dependency injection container.</returns>
-    public static IServiceCollection AddBaGetOptions<TOptions>(
-        this IServiceCollection services,
-        string key = null)
-        where TOptions : class
+    private static IServiceCollection AddBaGetOptions<TOptions>(this IServiceCollection services, string key = null) where TOptions : class
     {
         services.AddSingleton<IValidateOptions<TOptions>>(new ValidateBaGetOptions<TOptions>(key));
         services.AddSingleton<IConfigureOptions<TOptions>>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
             if (key != null)
-            {
                 config = config.GetSection(key);
-            }
-
             return new BindOptions<TOptions>(config);
         });
 
         return services;
     }
-
     private static void AddConfiguration(this IServiceCollection services)
     {
         services.AddBaGetOptions<BaGetOptions>();
@@ -68,7 +69,6 @@ public static partial class DependencyInjectionExtensions
         services.AddBaGetOptions<SearchOptions>(nameof(BaGetOptions.Search));
         services.AddBaGetOptions<StorageOptions>(nameof(BaGetOptions.Storage));
     }
-
     private static void AddBaGetServices(this IServiceCollection services)
     {
         services.TryAddSingleton<IFrameworkCompatibilityService, FrameworkCompatibilityService>();
@@ -109,39 +109,30 @@ public static partial class DependencyInjectionExtensions
 
         services.TryAddTransient(UpstreamClientFactory);
     }
-
     private static void AddDefaultProviders(this IServiceCollection services)
     {
         services.AddProvider((provider, configuration) =>
         {
             if (!configuration.HasSearchType("null")) return null;
-
             return provider.GetRequiredService<NullSearchService>();
         });
 
         services.AddProvider((provider, configuration) =>
         {
             if (!configuration.HasSearchType("null")) return null;
-
             return provider.GetRequiredService<NullSearchIndexer>();
         });
 
         services.AddProvider<IStorageService>((provider, configuration) =>
         {
             if (configuration.HasStorageType("filesystem"))
-            {
                 return provider.GetRequiredService<FileStorageService>();
-            }
-
             if (configuration.HasStorageType("null"))
-            {
                 return provider.GetRequiredService<NullStorageService>();
-            }
 
             return null;
         });
     }
-
     private static void AddFallbackServices(this IServiceCollection services)
     {
         services.TryAddScoped<IContext, NullContext>();
@@ -165,7 +156,6 @@ public static partial class DependencyInjectionExtensions
         services.TryAddTransient<ISearchIndexer>(provider => provider.GetRequiredService<NullSearchIndexer>());
         services.TryAddTransient<ISearchService>(provider => provider.GetRequiredService<DatabaseSearchService>());
     }
-
     private static HttpClient HttpClientFactory(IServiceProvider provider)
     {
         var options = provider.GetRequiredService<IOptions<MirrorOptions>>().Value;
@@ -184,35 +174,21 @@ public static partial class DependencyInjectionExtensions
 
         return client;
     }
-
     private static NuGetClientFactory NuGetClientFactoryFactory(IServiceProvider provider)
     {
         var httpClient = provider.GetRequiredService<HttpClient>();
         var options = provider.GetRequiredService<IOptions<MirrorOptions>>();
 
-        return new NuGetClientFactory(
-            httpClient,
-            options.Value.PackageSource.ToString());
+        return new NuGetClientFactory(httpClient, options.Value.PackageSource.ToString());
     }
-
     private static IUpstreamClient UpstreamClientFactory(IServiceProvider provider)
     {
         var options = provider.GetRequiredService<IOptionsSnapshot<MirrorOptions>>();
-
         // TODO: Convert to switch expression.
         if (!options.Value.Enabled)
-        {
             return provider.GetRequiredService<DisabledUpstreamClient>();
-        }
-
         else if (options.Value.Legacy)
-        {
             return provider.GetRequiredService<V2UpstreamClient>();
-        }
-
-        else
-        {
-            return provider.GetRequiredService<V3UpstreamClient>();
-        }
+        else return provider.GetRequiredService<V3UpstreamClient>();
     }
 }

@@ -1,15 +1,18 @@
-using BaGet.Protocol;
-using BaGet.Protocol.Models;
-using Microsoft.Extensions.Logging;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
+using BaGet.Core.Extensions;
+using BaGet.Protocol;
+using BaGet.Protocol.Extensions;
+using BaGet.Protocol.Models;
+using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Upstream.Clients;
 
 /// <summary>
 /// The mirroring client for a NuGet server that uses the V3 protocol.
@@ -25,10 +28,7 @@ public class V3UpstreamClient : IUpstreamClient
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Stream> DownloadPackageOrNullAsync(
-        string id,
-        NuGetVersion version,
-        CancellationToken cancellationToken)
+    public async Task<Stream> DownloadPackageOrNullAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
     {
         try
         {
@@ -43,23 +43,16 @@ public class V3UpstreamClient : IUpstreamClient
         }
         catch (Exception e)
         {
-            _logger.LogError(
-                e,
-                "Failed to download {PackageId} {PackageVersion} from upstream",
-                id,
-                version);
+            _logger.LogError(e, "Failed to download {PackageId} {PackageVersion} from upstream", id, version);
             return null;
         }
     }
 
-    public async Task<IReadOnlyList<Package>> ListPackagesAsync(
-        string id,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Package>> ListPackagesAsync(string id, CancellationToken cancellationToken)
     {
         try
         {
             var packages = await _client.GetPackageMetadataAsync(id, cancellationToken);
-
             return packages.Select(ToPackage).ToList();
         }
         catch (Exception e)
@@ -112,7 +105,6 @@ public class V3UpstreamClient : IUpstreamClient
             RepositoryType = null,
             SemVerLevel = version.IsSemVer2 ? SemVerLevel.SemVer2 : SemVerLevel.Unknown,
             Tags = metadata.Tags?.ToArray() ?? Array.Empty<string>(),
-
             Dependencies = ToDependencies(metadata)
         };
     }
@@ -122,10 +114,7 @@ public class V3UpstreamClient : IUpstreamClient
         if (uriString == null) return null;
 
         if (!Uri.TryCreate(uriString, UriKind.Absolute, out var uri))
-        {
             return null;
-        }
-
         return uri;
     }
 

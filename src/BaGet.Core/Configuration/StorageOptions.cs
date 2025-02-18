@@ -1,4 +1,4 @@
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 public class StorageOptions
 {

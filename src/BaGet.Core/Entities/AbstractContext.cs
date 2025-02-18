@@ -1,9 +1,10 @@
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+using System.Threading.Tasks;
+using BaGet.Core.Entities.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Entities;
 
 public abstract class AbstractContext<TContext> : DbContext, IContext where TContext : DbContext
 {
@@ -31,9 +32,6 @@ public abstract class AbstractContext<TContext> : DbContext, IContext where TCon
     public DbSet<TargetFramework> TargetFrameworks { get; set; }
 
     public Task<int> SaveChangesAsync() => SaveChangesAsync(default);
-
-    public virtual async Task RunMigrationsAsync(CancellationToken cancellationToken)
-        => await Database.MigrateAsync(cancellationToken);
 
     public abstract bool IsUniqueConstraintViolationException(DbUpdateException exception);
 

@@ -1,10 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using NuGet.Versioning;
 
 namespace BaGet.Core;
 
@@ -22,9 +23,7 @@ public class PackageDatabase : IPackageDatabase
         try
         {
             _context.Packages.Add(package);
-
             await _context.SaveChangesAsync(cancellationToken);
-
             return PackageAddResult.Success;
         }
         catch (DbUpdateException e)
@@ -35,12 +34,7 @@ public class PackageDatabase : IPackageDatabase
     }
 
     public async Task<bool> ExistsAsync(string id, CancellationToken cancellationToken)
-    {
-        return await _context
-            .Packages
-            .Where(p => p.Id == id)
-            .AnyAsync(cancellationToken);
-    }
+        => await _context.Packages.Where(p => p.Id == id).AnyAsync(cancellationToken);
 
     public async Task<bool> ExistsAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
     {
@@ -60,18 +54,11 @@ public class PackageDatabase : IPackageDatabase
             .Where(p => p.Id == id);
 
         if (!includeUnlisted)
-        {
             query = query.Where(p => p.Listed);
-        }
-
         return (await query.ToListAsync(cancellationToken)).AsReadOnly();
     }
 
-    public Task<Package> FindOrNullAsync(
-        string id,
-        NuGetVersion version,
-        bool includeUnlisted,
-        CancellationToken cancellationToken)
+    public Task<Package> FindOrNullAsync(string id, NuGetVersion version, bool includeUnlisted, CancellationToken cancellationToken)
     {
         var query = _context.Packages
             .Include(p => p.Dependencies)
@@ -88,20 +75,9 @@ public class PackageDatabase : IPackageDatabase
     }
 
     public Task<bool> UnlistPackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return TryUpdatePackageAsync(id, version, p => p.Listed = false, cancellationToken);
-    }
-
+        => TryUpdatePackageAsync(id, version, p => p.Listed = false, cancellationToken);
     public Task<bool> RelistPackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return TryUpdatePackageAsync(id, version, p => p.Listed = true, cancellationToken);
-    }
-
-    public async Task AddDownloadAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        await TryUpdatePackageAsync(id, version, p => p.Downloads += 1, cancellationToken);
-    }
-
+        => TryUpdatePackageAsync(id, version, p => p.Listed = true, cancellationToken);
     public async Task<bool> HardDeletePackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
     {
         var package = await _context.Packages
@@ -112,21 +88,14 @@ public class PackageDatabase : IPackageDatabase
             .FirstOrDefaultAsync(cancellationToken);
 
         if (package == null)
-        {
             return false;
-        }
 
         _context.Packages.Remove(package);
         await _context.SaveChangesAsync(cancellationToken);
-
         return true;
     }
 
-    private async Task<bool> TryUpdatePackageAsync(
-        string id,
-        NuGetVersion version,
-        Action<Package> action,
-        CancellationToken cancellationToken)
+    private async Task<bool> TryUpdatePackageAsync(string id, NuGetVersion version, Action<Package> action, CancellationToken cancellationToken)
     {
         var package = await _context.Packages
             .Where(p => p.Id == id)
@@ -137,10 +106,8 @@ public class PackageDatabase : IPackageDatabase
         {
             action(package);
             await _context.SaveChangesAsync(cancellationToken);
-
             return true;
         }
-
         return false;
     }
 }

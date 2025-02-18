@@ -1,15 +1,15 @@
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Upstream;
 
 // See https://github.com/NuGet/NuGet.Services.Metadata/blob/master/src/NuGet.Indexing/Downloads.cs
 public class PackageDownloadsJsonSource : IPackageDownloadsSource
@@ -36,7 +36,6 @@ public class PackageDownloadsJsonSource : IPackageDownloadsSource
         using (var jsonReader = new JsonTextReader(downloadStreamReader))
         {
             _logger.LogInformation("Parsing package downloads...");
-
             jsonReader.Read();
 
             while (jsonReader.Read())
@@ -47,11 +46,12 @@ public class PackageDownloadsJsonSource : IPackageDownloadsSource
                     {
                         // TODO: This line reads the entire document into memory...
                         var record = JToken.ReadFrom(jsonReader);
-                        var id = string.Intern(record[0].ToString().ToLowerInvariant());
+
+                        var id = string.Intern(record[0]!.ToString().ToLowerInvariant());
 
                         // The second entry in each record should be an array of versions, if not move on to next entry.
                         // This is a check to safe guard against invalid entries.
-                        if (record.Count() == 2 && record[1].Type != JTokenType.Array)
+                        if (record.Count() == 2 && record[1]!.Type != JTokenType.Array)
                         {
                             continue;
                         }
@@ -65,8 +65,8 @@ public class PackageDownloadsJsonSource : IPackageDownloadsSource
                         {
                             if (token != null && token.Count() == 2)
                             {
-                                var version = string.Intern(NuGetVersion.Parse(token[0].ToString()).ToNormalizedString().ToLowerInvariant());
-                                var downloads = token[1].ToObject<int>();
+                                var version = string.Intern(NuGetVersion.Parse(token[0]!.ToString()).ToNormalizedString().ToLowerInvariant());
+                                var downloads = token[1]!.ToObject<int>();
 
                                 results[id][version] = downloads;
                             }
@@ -100,9 +100,7 @@ public class PackageDownloadsJsonSource : IPackageDownloadsSource
         }
 
         fileStream.Seek(0, SeekOrigin.Begin);
-
         _logger.LogInformation("Downloaded downloads.v1.json");
-
         return fileStream;
     }
 }

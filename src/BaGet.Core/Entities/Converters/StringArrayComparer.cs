@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Entities.Converters;
 
 public class StringArrayComparer : ValueComparer<string[]>
 {
-    public static readonly StringArrayComparer Instance = new StringArrayComparer();
+    public static readonly StringArrayComparer Instance = new();
 
     public StringArrayComparer()
         : base(

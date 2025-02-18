@@ -1,10 +1,11 @@
-﻿using NuGet.Versioning;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Upstream;
 
 /// <summary>
 /// A client to interact with an upstream package source.

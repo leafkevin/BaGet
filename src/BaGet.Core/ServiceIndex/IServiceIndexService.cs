@@ -1,8 +1,8 @@
-using BaGet.Protocol.Models;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.ServiceIndex;
 
 /// <summary>
 /// The NuGet Service Index service, used to discover other resources.

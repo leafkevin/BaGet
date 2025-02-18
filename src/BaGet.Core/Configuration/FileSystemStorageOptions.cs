@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 public class FileSystemStorageOptions : IValidatableObject
 {
@@ -17,11 +17,8 @@ public class FileSystemStorageOptions : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // Convert an empty storage path to the current working directory.
-        if (string.IsNullOrEmpty(Path))
-        {
-            Path = Directory.GetCurrentDirectory();
-        }
-
+        if (string.IsNullOrEmpty(Path)) 
+            Path = Directory.GetCurrentDirectory(); 
         return Enumerable.Empty<ValidationResult>();
     }
 }

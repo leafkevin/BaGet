@@ -1,6 +1,6 @@
 using System;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Extensions;
 
 /// <summary>
 /// A wrapper that allows for unit tests related to system time.

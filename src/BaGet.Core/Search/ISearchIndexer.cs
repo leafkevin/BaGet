@@ -1,7 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 public interface ISearchIndexer
 {

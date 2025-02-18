@@ -1,7 +1,8 @@
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 /// <summary>
 /// The package ids that depend on the queried package.
@@ -14,7 +15,6 @@ public class DependentsResponse
     /// </summary>
     [JsonPropertyName("totalHits")]
     public long TotalHits { get; set; }
-
     /// <summary>
     /// The package IDs matched by the dependent query.
     /// </summary>
@@ -32,13 +32,11 @@ public class PackageDependent
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; }
-
     /// <summary>
     /// The description of the dependent package.
     /// </summary>
     [JsonPropertyName("description")]
     public string Description { get; set; }
-
     /// <summary>
     /// The total downloads for the dependent package.
     /// </summary>

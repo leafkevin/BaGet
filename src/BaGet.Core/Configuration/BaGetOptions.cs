@@ -1,4 +1,4 @@
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 public class BaGetOptions
 {
@@ -28,24 +28,20 @@ public class BaGetOptions
     /// If enabled, pushing a package that already exists will replace the
     /// existing package.
     /// </summary>
-    public bool AllowPackageOverwrites { get; set; } = false;
+    public bool AllowPackageOverwrites { get; set; }
 
     /// <summary>
     /// If true, disables package pushing, deleting, and re-listing.
     /// </summary>
-    public bool IsReadOnlyMode { get; set; } = false;
+    public bool IsReadOnlyMode { get; set; }
 
     /// <summary>
     /// The URLs the BaGet server will use.
     /// As per documentation <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1#server-urls">here (Server URLs)</a>.
     /// </summary>
     public string Urls { get; set; }
-
     public DatabaseOptions Database { get; set; }
-
     public StorageOptions Storage { get; set; }
-
     public SearchOptions Search { get; set; }
-
     public MirrorOptions Mirror { get; set; }
 }

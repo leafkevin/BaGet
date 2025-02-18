@@ -1,11 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using BaGet.Core.Configuration;
+using BaGet.Core.Entities;
+using BaGet.Core.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
-using System.Collections.Generic;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Extensions;
 
 public static partial class DependencyInjectionExtensions
 {

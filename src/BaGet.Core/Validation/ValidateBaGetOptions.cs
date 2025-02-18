@@ -1,8 +1,8 @@
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Validation;
 
 /// <summary>
 /// A configuration that validates options using data annotations.

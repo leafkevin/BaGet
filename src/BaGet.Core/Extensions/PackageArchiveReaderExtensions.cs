@@ -1,15 +1,15 @@
-using NuGet.Common;
-using NuGet.Packaging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace BaGet.Core;
-
+using BaGet.Core.Entities;
+using NuGet.Common;
+using NuGet.Packaging;
 using NuGetPackageType = NuGet.Packaging.Core.PackageType;
+
+namespace BaGet.Core.Extensions;
 
 public static class PackageArchiveReaderExtensions
 {
@@ -19,26 +19,34 @@ public static class PackageArchiveReaderExtensions
     public static bool HasEmbeddedIcon(this PackageArchiveReader package)
         => !string.IsNullOrEmpty(package.NuspecReader.GetIcon());
 
-    public async static Task<Stream> GetReadmeAsync(
-        this PackageArchiveReader package,
-        CancellationToken cancellationToken)
+    public static async Task<Stream> GetReadmeAsync(this PackageArchiveReader package, CancellationToken cancellationToken)
     {
         var readmePath = package.NuspecReader.GetReadme();
         if (readmePath == null)
-        {
             throw new InvalidOperationException("Package does not have a readme!");
-        }
 
-        return await package.GetStreamAsync(readmePath, cancellationToken);
+        try
+        {
+            return await package.GetStreamAsync(readmePath, cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Readme is missing, return an empty stream.
+            return new MemoryStream();
+        }
     }
 
-    public async static Task<Stream> GetIconAsync(
-        this PackageArchiveReader package,
-        CancellationToken cancellationToken)
+    public static async Task<Stream> GetIconAsync(this PackageArchiveReader package, CancellationToken cancellationToken)
     {
-        return await package.GetStreamAsync(
-            PathUtility.StripLeadingDirectorySeparators(package.NuspecReader.GetIcon()),
-            cancellationToken);
+        try
+        {
+            return await package.GetStreamAsync(PathUtility.StripLeadingDirectorySeparators(package.NuspecReader.GetIcon()), cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Icon is missing, return an empty stream.
+            return new MemoryStream();
+        }
     }
 
     public static Package GetPackageMetadata(this PackageArchiveReader packageReader)
@@ -81,9 +89,7 @@ public static class PackageArchiveReaderExtensions
     private static SemVerLevel GetSemVerLevel(NuspecReader nuspec)
     {
         if (nuspec.GetVersion().IsSemVer2)
-        {
             return SemVerLevel.SemVer2;
-        }
 
         foreach (var dependencyGroup in nuspec.GetDependencyGroups())
         {
@@ -91,33 +97,27 @@ public static class PackageArchiveReaderExtensions
             {
                 if ((dependency.VersionRange.MinVersion != null && dependency.VersionRange.MinVersion.IsSemVer2)
                     || (dependency.VersionRange.MaxVersion != null && dependency.VersionRange.MaxVersion.IsSemVer2))
-                {
                     return SemVerLevel.SemVer2;
-                }
             }
         }
-
         return SemVerLevel.Unknown;
     }
 
     private static Uri ParseUri(string uriString)
     {
         if (string.IsNullOrEmpty(uriString)) return null;
-
         return new Uri(uriString);
     }
 
     private static string[] ParseAuthors(string authors)
     {
         if (string.IsNullOrEmpty(authors)) return new string[0];
-
         return authors.Split(new[] { ',', ';', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
     }
 
     private static string[] ParseTags(string tags)
     {
         if (string.IsNullOrEmpty(tags)) return new string[0];
-
         return tags.Split(new[] { ',', ';', ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
     }
 
@@ -127,31 +127,20 @@ public static class PackageArchiveReaderExtensions
 
         if (string.IsNullOrEmpty(repository?.Url) ||
             !Uri.TryCreate(repository.Url, UriKind.Absolute, out var repositoryUri))
-        {
             return (null, null);
-        }
-
         if (repositoryUri.Scheme != Uri.UriSchemeHttps)
-        {
             return (null, null);
-        }
-
         if (repository.Type.Length > 100)
-        {
             throw new InvalidOperationException("Repository type must be less than or equal 100 characters");
-        }
-
         return (repositoryUri, repository.Type);
     }
 
     private static List<PackageDependency> GetDependencies(NuspecReader nuspec)
     {
         var dependencies = new List<PackageDependency>();
-
         foreach (var group in nuspec.GetDependencyGroups())
         {
             var targetFramework = group.TargetFramework.GetShortFolderName();
-
             if (!group.Packages.Any())
             {
                 dependencies.Add(new PackageDependency
@@ -172,7 +161,6 @@ public static class PackageArchiveReaderExtensions
                 });
             }
         }
-
         return dependencies;
     }
 
@@ -196,7 +184,6 @@ public static class PackageArchiveReaderExtensions
                 Version = NuGetPackageType.Dependency.Version.ToString(),
             });
         }
-
         return packageTypes;
     }
 
@@ -204,18 +191,12 @@ public static class PackageArchiveReaderExtensions
     {
         var targetFrameworks = packageReader
             .GetSupportedFrameworks()
-            .Select(f => new TargetFramework
-            {
-                Moniker = f.GetShortFolderName()
-            })
+            .Select(f => new TargetFramework { Moniker = f.GetShortFolderName() })
             .ToList();
 
         // Default to the "any" framework if no frameworks were found.
         if (targetFrameworks.Count == 0)
-        {
             targetFrameworks.Add(new TargetFramework { Moniker = "any" });
-        }
-
         return targetFrameworks;
     }
 }

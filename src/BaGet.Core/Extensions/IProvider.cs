@@ -1,7 +1,7 @@
-using Microsoft.Extensions.Configuration;
 using System;
+using Microsoft.Extensions.Configuration;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Extensions;
 
 /// <summary>
 /// Attempts to provide the <typeparamref name="TService"/>.
@@ -38,7 +38,6 @@ internal class DelegateProvider<TService> : IProvider<TService>
     {
         _func = func ?? throw new ArgumentNullException(nameof(func));
     }
-
     public TService GetOrNull(IServiceProvider provider, IConfiguration configuration)
     {
         return _func(provider, configuration);

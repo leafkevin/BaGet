@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 public class DatabaseOptions
 {

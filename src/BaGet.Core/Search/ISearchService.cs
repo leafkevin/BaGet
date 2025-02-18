@@ -1,8 +1,8 @@
-using BaGet.Protocol.Models;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 /// <summary>
 /// The service used to search for packages.
@@ -44,7 +44,5 @@ public interface ISearchService
     /// <param name="packageId">The package whose dependents should be found.</param>
     /// <param name="cancellationToken">A token to cancel the task.</param>
     /// <returns>The dependents response.</returns>
-    Task<DependentsResponse> FindDependentsAsync(
-        string packageId,
-        CancellationToken cancellationToken);
+    Task<DependentsResponse> FindDependentsAsync(string packageId, CancellationToken cancellationToken);
 }

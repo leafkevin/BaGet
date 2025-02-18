@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using BaGet.Core.Entities;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Metadata;
 
 /// <summary>
 /// The information on all versions of a package.
@@ -13,9 +14,7 @@ public class PackageRegistration
     /// </summary>
     /// <param name="packageId"></param>
     /// <param name="packages">All versions of the package.</param>
-    public PackageRegistration(
-        string packageId,
-        IReadOnlyList<Package> packages)
+    public PackageRegistration(string packageId, IReadOnlyList<Package> packages)
     {
         PackageId = packageId ?? throw new ArgumentNullException(nameof(packageId));
         Packages = packages ?? throw new ArgumentNullException(nameof(packages));

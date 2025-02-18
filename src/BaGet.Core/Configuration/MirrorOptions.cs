@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 public class MirrorOptions : IValidatableObject
 {

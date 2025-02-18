@@ -1,8 +1,8 @@
-using NuGet.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Indexing;
 
 public interface IPackageDeletionService
 {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Storage;
 
 /// <summary>
 /// A low-level storage abstraction.
@@ -70,12 +70,10 @@ public enum StoragePutResult
     /// The given path is already used to store different content.
     /// </summary>
     Conflict,
-
     /// <summary>
     /// This content is already stored at the given path.
     /// </summary>
     AlreadyExists,
-
     /// <summary>
     /// The content was sucessfully stored.
     /// </summary>

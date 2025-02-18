@@ -1,4 +1,4 @@
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 /// <summary>
 /// How BaGet should interpret package deletion requests.
@@ -12,7 +12,6 @@ public enum PackageDeletionBehavior
     /// the "left pad" problem.
     /// </summary>
     Unlist,
-
     /// <summary>
     /// Removes the package from the database and storage. Existing consumers will no longer
     /// be able to restore the package.

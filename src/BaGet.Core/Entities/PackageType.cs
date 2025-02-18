@@ -1,12 +1,11 @@
-namespace BaGet.Core;
+// ReSharper disable EntityFramework.ModelValidation.UnlimitedStringLength
+namespace BaGet.Core.Entities;
 
 // See NuGetGallery.Core's: https://github.com/NuGet/NuGetGallery/blob/master/src/NuGetGallery.Core/Entities/PackageType.cs
 public class PackageType
 {
     public int Key { get; set; }
-
     public string Name { get; set; }
     public string Version { get; set; }
-
     public Package Package { get; set; }
 }

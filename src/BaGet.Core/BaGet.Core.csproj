@@ -4,17 +4,11 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.13" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-		<PackageReference Include="NuGet.Frameworks" Version="6.13.1" />
 		<PackageReference Include="NuGet.Protocol" Version="6.13.1" />
-		<PackageReference Include="NuGet.Versioning" Version="6.13.1" />
 		<PackageReference Include="System.Reflection.Metadata" Version="8.0.1" />
-		<PackageReference Include="System.Text.Json" Version="9.0.2" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\BaGet.Protocol\BaGet.Protocol.csproj" />
+	  <ProjectReference Include="..\BaGet.Protocol\BaGet.Protocol.csproj" />
 	</ItemGroup>
 </Project>

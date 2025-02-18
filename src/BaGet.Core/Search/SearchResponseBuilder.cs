@@ -1,9 +1,10 @@
-﻿using BaGet.Protocol.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BaGet.Core.Metadata;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 public class SearchResponseBuilder : ISearchResponseBuilder
 {
@@ -40,14 +41,13 @@ public class SearchResponseBuilder : ISearchResponseBuilder
                 Tags = latest.Tags,
                 Title = latest.Title,
                 TotalDownloads = versions.Sum(p => p.Downloads),
-                Versions = versions
-                    .Select(p => new SearchResultVersion
-                    {
-                        RegistrationLeafUrl = _url.GetRegistrationLeafUrl(p.Id, p.Version),
-                        Version = p.Version.ToFullString(),
-                        Downloads = p.Downloads,
-                    })
-                    .ToList(),
+                Versions = versions.Select(p => new SearchResultVersion
+                {
+                    RegistrationLeafUrl = _url.GetRegistrationLeafUrl(p.Id, p.Version),
+                    Version = p.Version.ToFullString(),
+                    Downloads = p.Downloads,
+                })
+                .ToList(),
             });
         }
 

@@ -1,11 +1,12 @@
-using Microsoft.Extensions.Logging;
-using NuGet.Versioning;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Entities;
+using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Storage;
 
 public class PackageStorageService : IPackageStorageService
 {
@@ -48,42 +49,30 @@ public class PackageStorageService : IPackageStorageService
         var readmePath = ReadmePath(lowercasedId, lowercasedNormalizedVersion);
         var iconPath = IconPath(lowercasedId, lowercasedNormalizedVersion);
 
-        _logger.LogInformation(
-            "Storing package {PackageId} {PackageVersion} at {Path}...",
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            packagePath);
+        _logger.LogInformation("Storing package {PackageId} {PackageVersion} at {Path}...",
+            lowercasedId, lowercasedNormalizedVersion, packagePath);
 
         // Store the package.
         var result = await _storage.PutAsync(packagePath, packageStream, PackageContentType, cancellationToken);
         if (result == StoragePutResult.Conflict)
         {
             // TODO: This should be returned gracefully with an enum.
-            _logger.LogInformation(
-                "Could not store package {PackageId} {PackageVersion} at {Path} due to conflict",
-                lowercasedId,
-                lowercasedNormalizedVersion,
-                packagePath);
+            _logger.LogInformation("Could not store package {PackageId} {PackageVersion} at {Path} due to conflict",
+                lowercasedId, lowercasedNormalizedVersion, packagePath);
 
             throw new InvalidOperationException($"Failed to store package {lowercasedId} {lowercasedNormalizedVersion} due to conflict");
         }
 
         // Store the package's nuspec.
-        _logger.LogInformation(
-            "Storing package {PackageId} {PackageVersion} nuspec at {Path}...",
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            nuspecPath);
+        _logger.LogInformation("Storing package {PackageId} {PackageVersion} nuspec at {Path}...",
+            lowercasedId, lowercasedNormalizedVersion, nuspecPath);
 
         result = await _storage.PutAsync(nuspecPath, nuspecStream, NuspecContentType, cancellationToken);
         if (result == StoragePutResult.Conflict)
         {
             // TODO: This should be returned gracefully with an enum.
-            _logger.LogInformation(
-                "Could not store package {PackageId} {PackageVersion} nuspec at {Path} due to conflict",
-                lowercasedId,
-                lowercasedNormalizedVersion,
-                nuspecPath);
+            _logger.LogInformation("Could not store package {PackageId} {PackageVersion} nuspec at {Path} due to conflict",
+                lowercasedId, lowercasedNormalizedVersion, nuspecPath);
 
             throw new InvalidOperationException($"Failed to store package {lowercasedId} {lowercasedNormalizedVersion} nuspec due to conflict");
         }
@@ -91,21 +80,15 @@ public class PackageStorageService : IPackageStorageService
         // Store the package's readme, if one exists.
         if (readmeStream != null)
         {
-            _logger.LogInformation(
-                "Storing package {PackageId} {PackageVersion} readme at {Path}...",
-                lowercasedId,
-                lowercasedNormalizedVersion,
-                readmePath);
+            _logger.LogInformation("Storing package {PackageId} {PackageVersion} readme at {Path}...",
+                lowercasedId, lowercasedNormalizedVersion, readmePath);
 
             result = await _storage.PutAsync(readmePath, readmeStream, ReadmeContentType, cancellationToken);
             if (result == StoragePutResult.Conflict)
             {
                 // TODO: This should be returned gracefully with an enum.
-                _logger.LogInformation(
-                    "Could not store package {PackageId} {PackageVersion} readme at {Path} due to conflict",
-                    lowercasedId,
-                    lowercasedNormalizedVersion,
-                    readmePath);
+                _logger.LogInformation("Could not store package {PackageId} {PackageVersion} readme at {Path} due to conflict",
+                    lowercasedId, lowercasedNormalizedVersion, readmePath);
 
                 throw new InvalidOperationException($"Failed to store package {lowercasedId} {lowercasedNormalizedVersion} readme due to conflict");
             }
@@ -114,52 +97,32 @@ public class PackageStorageService : IPackageStorageService
         // Store the package's icon, if one exists.
         if (iconStream != null)
         {
-            _logger.LogInformation(
-                "Storing package {PackageId} {PackageVersion} icon at {Path}...",
-                lowercasedId,
-                lowercasedNormalizedVersion,
-                iconPath);
+            _logger.LogInformation("Storing package {PackageId} {PackageVersion} icon at {Path}...",
+                lowercasedId, lowercasedNormalizedVersion, iconPath);
 
             result = await _storage.PutAsync(iconPath, iconStream, IconContentType, cancellationToken);
             if (result == StoragePutResult.Conflict)
             {
                 // TODO: This should be returned gracefully with an enum.
-                _logger.LogInformation(
-                    "Could not store package {PackageId} {PackageVersion} icon at {Path} due to conflict",
-                    lowercasedId,
-                    lowercasedNormalizedVersion,
-                    iconPath);
+                _logger.LogInformation("Could not store package {PackageId} {PackageVersion} icon at {Path} due to conflict",
+                    lowercasedId, lowercasedNormalizedVersion, iconPath);
 
                 throw new InvalidOperationException($"Failed to store package {lowercasedId} {lowercasedNormalizedVersion} icon");
             }
         }
 
-        _logger.LogInformation(
-            "Finished storing package {PackageId} {PackageVersion}",
-            lowercasedId,
-            lowercasedNormalizedVersion);
+        _logger.LogInformation("Finished storing package {PackageId} {PackageVersion}",
+            lowercasedId, lowercasedNormalizedVersion);
     }
 
     public async Task<Stream> GetPackageStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return await GetStreamAsync(id, version, PackagePath, cancellationToken);
-    }
-
+        => await GetStreamAsync(id, version, PackagePath, cancellationToken);
     public async Task<Stream> GetNuspecStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return await GetStreamAsync(id, version, NuspecPath, cancellationToken);
-    }
-
+        => await GetStreamAsync(id, version, NuspecPath, cancellationToken);
     public async Task<Stream> GetReadmeStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return await GetStreamAsync(id, version, ReadmePath, cancellationToken);
-    }
-
+        => await GetStreamAsync(id, version, ReadmePath, cancellationToken);
     public async Task<Stream> GetIconStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
-    {
-        return await GetStreamAsync(id, version, IconPath, cancellationToken);
-    }
-
+        => await GetStreamAsync(id, version, IconPath, cancellationToken);
     public async Task DeleteAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
     {
         var lowercasedId = id.ToLowerInvariant();
@@ -176,11 +139,7 @@ public class PackageStorageService : IPackageStorageService
         await _storage.DeleteAsync(iconPath, cancellationToken);
     }
 
-    private async Task<Stream> GetStreamAsync(
-        string id,
-        NuGetVersion version,
-        Func<string, string, string> pathFunc,
-        CancellationToken cancellationToken)
+    private async Task<Stream> GetStreamAsync(string id, NuGetVersion version, Func<string, string, string> pathFunc, CancellationToken cancellationToken)
     {
         var lowercasedId = id.ToLowerInvariant();
         var lowercasedNormalizedVersion = version.ToNormalizedString().ToLowerInvariant();
@@ -203,40 +162,12 @@ public class PackageStorageService : IPackageStorageService
             throw;
         }
     }
-
     private string PackagePath(string lowercasedId, string lowercasedNormalizedVersion)
-    {
-        return Path.Combine(
-            PackagesPathPrefix,
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            $"{lowercasedId}.{lowercasedNormalizedVersion}.nupkg");
-    }
-
+        => Path.Combine(PackagesPathPrefix, lowercasedId, lowercasedNormalizedVersion, $"{lowercasedId}.{lowercasedNormalizedVersion}.nupkg");
     private string NuspecPath(string lowercasedId, string lowercasedNormalizedVersion)
-    {
-        return Path.Combine(
-            PackagesPathPrefix,
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            $"{lowercasedId}.nuspec");
-    }
-
+        => Path.Combine(PackagesPathPrefix, lowercasedId, lowercasedNormalizedVersion, $"{lowercasedId}.nuspec");
     private string ReadmePath(string lowercasedId, string lowercasedNormalizedVersion)
-    {
-        return Path.Combine(
-            PackagesPathPrefix,
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            "readme");
-    }
-
+        => Path.Combine(PackagesPathPrefix, lowercasedId, lowercasedNormalizedVersion, "readme");
     private string IconPath(string lowercasedId, string lowercasedNormalizedVersion)
-    {
-        return Path.Combine(
-            PackagesPathPrefix,
-            lowercasedId,
-            lowercasedNormalizedVersion,
-            "icon");
-    }
+        => Path.Combine(PackagesPathPrefix, lowercasedId, lowercasedNormalizedVersion, "icon");
 }

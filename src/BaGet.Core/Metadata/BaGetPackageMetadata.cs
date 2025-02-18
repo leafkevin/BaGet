@@ -1,8 +1,9 @@
-using BaGet.Protocol.Models;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Metadata;
 
 /// <summary>
 /// BaGet's extensions to the package metadata model. These additions

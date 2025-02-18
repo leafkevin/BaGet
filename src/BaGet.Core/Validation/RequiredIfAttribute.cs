@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace BaGet.Core;
+namespace BaGet.Core.Validation;
 
 /// <summary>
 /// Provides conditional validation based on related property value.

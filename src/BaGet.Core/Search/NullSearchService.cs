@@ -1,9 +1,9 @@
-using BaGet.Protocol.Models;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Search;
 
 /// <summary>
 /// A minimal search service implementation, used for advanced scenarios.
@@ -34,29 +34,8 @@ public class NullSearchService : ISearchService
             Data = new List<SearchResult>()
         });
 
-    public Task<AutocompleteResponse> AutocompleteAsync(
-        AutocompleteRequest request,
-        CancellationToken cancellationToken)
-    {
-        return EmptyAutocompleteResponseTask;
-    }
-
-    public Task<AutocompleteResponse> ListPackageVersionsAsync(
-        VersionsRequest request,
-        CancellationToken cancellationToken)
-    {
-        return EmptyAutocompleteResponseTask;
-    }
-
-    public Task<DependentsResponse> FindDependentsAsync(string packageId, CancellationToken cancellationToken)
-    {
-        return EmptyDependentsResponseTask;
-    }
-
-    public Task<SearchResponse> SearchAsync(
-        SearchRequest request,
-        CancellationToken cancellationToken)
-    {
-        return EmptySearchResponseTask;
-    }
+    public Task<AutocompleteResponse> AutocompleteAsync(AutocompleteRequest request, CancellationToken cancellationToken) => EmptyAutocompleteResponseTask;
+    public Task<AutocompleteResponse> ListPackageVersionsAsync(VersionsRequest request, CancellationToken cancellationToken) => EmptyAutocompleteResponseTask;
+    public Task<DependentsResponse> FindDependentsAsync(string packageId, CancellationToken cancellationToken) => EmptyDependentsResponseTask;
+    public Task<SearchResponse> SearchAsync(SearchRequest request, CancellationToken cancellationToken) => EmptySearchResponseTask;
 }

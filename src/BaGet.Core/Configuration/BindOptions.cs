@@ -1,8 +1,8 @@
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Configuration;
 
 /// <summary>
 /// Automatically binds configs to options.

@@ -1,9 +1,10 @@
-using BaGet.Protocol.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BaGet.Core.Entities;
+using BaGet.Protocol.Models;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Metadata;
 
 public class RegistrationBuilder
 {
@@ -58,7 +59,7 @@ public class RegistrationBuilder
     }
 
     private BaGetRegistrationIndexPageItem ToRegistrationIndexPageItem(Package package) =>
-        new BaGetRegistrationIndexPageItem
+        new()
         {
             RegistrationLeafUrl = _url.GetRegistrationLeafUrl(package.Id, package.Version),
             PackageContentUrl = _url.GetPackageDownloadUrl(package.Id, package.Version),

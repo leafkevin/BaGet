@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Upstream;
 
 public interface IPackageDownloadsSource
 {

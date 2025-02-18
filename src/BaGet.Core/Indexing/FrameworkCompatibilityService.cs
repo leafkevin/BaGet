@@ -1,11 +1,12 @@
-using NuGet.Frameworks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using static NuGet.Frameworks.FrameworkConstants;
+using NuGet.Frameworks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Indexing;
+
+using static FrameworkConstants;
 
 public class FrameworkCompatibilityService : IFrameworkCompatibilityService
 {
@@ -32,7 +33,7 @@ public class FrameworkCompatibilityService : IFrameworkCompatibilityService
             .Where(f => f.IsStatic)
             .Where(f => f.FieldType == typeof(NuGetFramework))
             .Select(f => (NuGetFramework)f.GetValue(null))
-            .Where(f => supportedFrameworks.Contains(f.Framework))
+            .Where(f => supportedFrameworks.Contains(f?.Framework))
             .ToDictionary(f => f.GetShortFolderName());
 
         // Add more frameworks missing from "CommonFrameworks"
@@ -43,25 +44,19 @@ public class FrameworkCompatibilityService : IFrameworkCompatibilityService
     public IReadOnlyList<string> FindAllCompatibleFrameworks(string name)
     {
         if (!KnownFrameworks.TryGetValue(name, out var framework))
-        {
             return new List<string> { name, AnyFramework };
-        }
-
         return CompatibleFrameworks.GetOrAdd(framework, FindAllCompatibleFrameworks);
     }
 
     private IReadOnlyList<string> FindAllCompatibleFrameworks(NuGetFramework targetFramework)
     {
         var results = new HashSet<string> { AnyFramework };
-
         // Find all framework mappings that apply to the target framework
         foreach (var mapping in CompatibilityMapping)
         {
             // Skip this mapping if it isn't for our target framework.
             if (!mapping.TargetFrameworkRange.Satisfies(targetFramework))
-            {
                 continue;
-            }
 
             // Any framework that satisfies this mapping is compatible with the target framework.
             foreach (var possibleFramework in KnownFrameworks.Values)
@@ -78,13 +73,9 @@ public class FrameworkCompatibilityService : IFrameworkCompatibilityService
         // with "net20" and "net45".
         foreach (var possibleFramework in KnownFrameworks.Values)
         {
-            if (possibleFramework.Framework == targetFramework.Framework &&
-                possibleFramework.Version <= targetFramework.Version)
-            {
+            if (possibleFramework.Framework == targetFramework.Framework && possibleFramework.Version <= targetFramework.Version)
                 results.Add(possibleFramework.GetShortFolderName());
-            }
         }
-
         return results.ToList();
     }
 }

@@ -1,3 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BaGet.Core.Configuration;
+using BaGet.Core.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Common;
@@ -6,16 +14,10 @@ using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Upstream.Clients;
 
-using ILogger = Microsoft.Extensions.Logging.ILogger<V2UpstreamClient>;
+using ILogger = ILogger<V2UpstreamClient>;
 using INuGetLogger = NuGet.Common.ILogger;
 
 /// <summary>
@@ -28,19 +30,12 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
     private readonly INuGetLogger _ngLogger;
     private readonly ILogger _logger;
 
-    public V2UpstreamClient(
-        IOptionsSnapshot<MirrorOptions> options,
-        ILogger logger)
+    public V2UpstreamClient(IOptionsSnapshot<MirrorOptions> options, ILogger logger)
     {
         if (options is null)
-        {
             throw new ArgumentNullException(nameof(options));
-        }
-
-        if (options.Value?.PackageSource?.AbsolutePath == null)
-        {
+        if (options.Value.PackageSource?.AbsolutePath == null)
             throw new ArgumentException("No mirror package source has been set.");
-        }
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -65,20 +60,12 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
         }
     }
 
-    public async Task<IReadOnlyList<Package>> ListPackagesAsync(
-        string id,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Package>> ListPackagesAsync(string id, CancellationToken cancellationToken)
     {
         try
         {
             var resource = await _repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            var packages = await resource.GetMetadataAsync(
-                id,
-                includePrerelease: true,
-                includeUnlisted: true,
-                _cache,
-                _ngLogger,
-                cancellationToken);
+            var packages = await resource.GetMetadataAsync(id, includePrerelease: true, includeUnlisted: true, _cache, _ngLogger, cancellationToken);
 
             return packages.Select(ToPackage).ToList();
         }
@@ -89,10 +76,7 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
         }
     }
 
-    public async Task<Stream> DownloadPackageOrNullAsync(
-        string id,
-        NuGetVersion version,
-        CancellationToken cancellationToken)
+    public async Task<Stream> DownloadPackageOrNullAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
     {
         var packageStream = new MemoryStream();
 
@@ -110,16 +94,11 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
             }
 
             packageStream.Position = 0;
-
             return packageStream;
         }
         catch (Exception e)
         {
-            _logger.LogError(
-                e,
-                "Failed to index package {Id} {Version} from upstream",
-                id,
-                version);
+            _logger.LogError(e, "Failed to index package {Id} {Version} from upstream", id, version);
 
             packageStream.Dispose();
             return null;
@@ -127,7 +106,6 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
     }
 
     public void Dispose() => _cache.Dispose();
-
     private Package ToPackage(IPackageSearchMetadata package)
     {
         return new Package
@@ -151,8 +129,7 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
             PackageTypes = new List<PackageType>(),
             RepositoryUrl = null,
             RepositoryType = null,
-            Tags = package.Tags?.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries),
-
+            Tags = package.Tags?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
             Dependencies = ToDependencies(package)
         };
     }
@@ -161,20 +138,12 @@ public class V2UpstreamClient : IUpstreamClient, IDisposable
     {
         if (string.IsNullOrEmpty(authors)) return Array.Empty<string>();
 
-        return authors
-            .Split(new[] { ',', ';', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(a => a.Trim())
-            .ToArray();
+        return authors.Split(new[] { ',', ';', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(a => a.Trim()).ToArray();
     }
 
     private List<PackageDependency> ToDependencies(IPackageSearchMetadata package)
-    {
-        return package
-            .DependencySets
-            .SelectMany(ToDependencies)
-            .ToList();
-    }
-
+        => package.DependencySets.SelectMany(ToDependencies).ToList();
     private IEnumerable<PackageDependency> ToDependencies(PackageDependencyGroup group)
     {
         var framework = group.TargetFramework.GetShortFolderName();

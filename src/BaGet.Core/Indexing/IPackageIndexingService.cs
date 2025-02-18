@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Indexing;
 
 /// <summary>
 /// The result of attempting to index a package.
@@ -14,12 +14,10 @@ public enum PackageIndexingResult
     /// The package is malformed. This may also happen if BaGet is in a corrupted state.
     /// </summary>
     InvalidPackage,
-
     /// <summary>
     /// The package has already been indexed.
     /// </summary>
     PackageAlreadyExists,
-
     /// <summary>
     /// The package has been indexed successfully.
     /// </summary>

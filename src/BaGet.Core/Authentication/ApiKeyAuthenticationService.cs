@@ -1,9 +1,10 @@
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BaGet.Core.Configuration;
+using Microsoft.Extensions.Options;
 
-namespace BaGet.Core;
+namespace BaGet.Core.Authentication;
 
 public class ApiKeyAuthenticationService : IAuthenticationService
 {
@@ -23,7 +24,6 @@ public class ApiKeyAuthenticationService : IAuthenticationService
     {
         // No authentication is necessary if there is no required API key.
         if (_apiKey == null) return true;
-
         return _apiKey == apiKey;
     }
 }
