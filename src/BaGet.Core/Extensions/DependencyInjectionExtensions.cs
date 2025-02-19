@@ -28,7 +28,6 @@ public static partial class DependencyInjectionExtensions
     public static IServiceCollection AddBaGetApplication(this IServiceCollection services, Action<BaGetApplication> configureAction)
     {
         var app = new BaGetApplication(services);
-
         services.AddConfiguration();
         services.AddBaGetServices();
         services.AddDefaultProviders();

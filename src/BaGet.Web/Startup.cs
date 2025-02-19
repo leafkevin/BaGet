@@ -21,7 +21,7 @@ namespace BaGet.Web;
 
 public static class Startup
 {
-    public static void AddDomainServivces(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static void AddDomainServivces(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IConfigureOptions<CorsOptions>, ConfigureBaGetOptions>();
         services.AddTransient<IConfigureOptions<FormOptions>, ConfigureBaGetOptions>();
@@ -40,7 +40,7 @@ public static class Startup
         services.AddRazorPages();
         services.AddHttpContextAccessor();
         services.AddTransient<IUrlGenerator, BaGetUrlGenerator>();
-        services.AddBaGetApplication(f =>  f.AddMySqlDatabase().AddFileStorage()); 
+        services.AddBaGetApplication(f => f.AddMySqlDatabase().AddFileStorage());
 
         services.AddScoped(DependencyInjectionExtensions.GetServiceFromProviders<IContext>);
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IStorageService>);
