@@ -134,7 +134,6 @@ public static partial class DependencyInjectionExtensions
                 return result;
             }
         }
-
         return null;
     }
 }
